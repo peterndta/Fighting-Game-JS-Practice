@@ -23,6 +23,7 @@ class Sprite{
     update(){
         this.draw()
         
+        this.position.x += this.velocity.x
         this.position.y += this.velocity.y // sẽ thêm số lượng pixel truyền vào mỗi frame => tạo hiệu ứng rơi
         
         if(this.position.y + this.height + this.velocity.y >= canvas.height){
@@ -46,6 +47,22 @@ const enemy = new Sprite({
 
 enemy.draw();
 
+const keys = { // để khắc phục việc buôn 1 phím nhưng dừng movement
+    a: {
+        pressed: false
+    },
+    d: {
+        pressed: false
+    },
+    w: {
+        pressed: false
+    }
+}
+// dùng để keep track phím cuối được nhấn cho vào dòng if below
+// để tránh việc khi press A thì k press D đc vì if vào A đầu tiên 
+let lastKey 
+
+
 function animate(){
     window.requestAnimationFrame(animate) // loop funct animate lại nhiều lần
                                         // để có thể animate object frame by frame
@@ -53,5 +70,46 @@ function animate(){
     c.fillRect(0, 0, canvas.width, canvas.height) // fill full size canvas màu đen mỗi frame để tạo hiệu ứng rơi thật hơn - không bị chảy dài xuống như sơn 
     player.update()
     enemy.update()
+    
+    player.velocity.x = 0 // dừng model character khi bỏ tay ra
+
+    if(keys.a.pressed && lastKey === 'a'){ // nếu pressed = true
+        player.velocity.x = -1
+    } 
+    else if (keys.d.pressed && lastKey === 'd'){ 
+        player.velocity.x = 1
+    }
 }
 animate()
+
+window.addEventListener( 'keydown', (event) => {
+    switch ( event.key){
+        case 'd':
+            keys.d.pressed = true; // di chuyển 1 px mỗi khi ấn d
+            lastKey = 'd'
+            break
+        case 'a':
+            keys.a.pressed = true;
+            // di chuyển 1 px mỗi khi ấn a
+            lastKey = 'a'
+            break
+        case 'w':
+            // bay lên - hạ xuống được nhờ có gravity, vì gravity luôn kéo model xuống nếu như lơ lững (k gần edge rìa)
+            player.velocity.y = -10 // thêm 10px vào trục y
+            break
+    }
+})
+
+window.addEventListener( 'keyup', (event) => {
+    switch ( event.key){
+        case 'd':
+            keys.d.pressed = false; // di chuyển 1 px mỗi khi ấn d
+            break
+        case 'a':
+            keys.a.pressed = false; // di chuyển 1 px mỗi khi ấn a
+            break
+        case 'w':
+            keys.w.pressed = false; // di chuyển 1 px mỗi khi ấn w
+            break
+    }
+})
