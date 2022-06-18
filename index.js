@@ -9,25 +9,50 @@ c.fillRect(0, 0, canvas.width, canvas.height); // create new rectangle đại di
 const gravity = 0.6
 
 class Sprite{
-    constructor({ position, velocity }) {
+    constructor({ position, velocity, color = 'red', offset}) {
         this.position = position
         this.velocity = velocity
         this.height = 150
-        
+        this.width = 50
         // lastKey dùng để keep track phím cuối được nhấn cho vào dòng if below
         // để tránh việc khi press A thì k press D đc vì if vào A đầu tiên 
         this.lastKey
+        this.attackBox = {
+            position:{  // cho attackBox luôn follow model
+                // tạo vị trí của attackBox tùy thuộc vào player hay enemy
+                x: this.position.x, 
+                y: this.position.y,
+            }, 
+            offset, // truyền từ lúc khổi tạo Sprite ở dưới - có tác dụng truyền vào cho update() để đổi hướng attackBox tùy thuộc vào player hay enemy
+
+            // Chiều dài và rộng của attackBox
+            width: 100,
+            height: 50,
+        }
+        this.color = color // màu của model
+        this.isAttacking // default là false
     }
 
     draw(){
-        c.fillStyle = 'red'
-        c.fillRect(this.position.x, this.position.y, 50, this.height)
+        c.fillStyle = this.color
+        c.fillRect(this.position.x, this.position.y, this.width, this.height)
+
+        // attackBox
+        if(this.isAttacking) { // chỉ show attackBox khi ấn attack => isAttacking = true
+            c.fillStyle = 'green'
+            c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.width, this.attackBox.height)    
+        }
     }
 
     update(){
         this.draw()
-        
-        this.position.x += this.velocity.x
+
+        //luôn update vị trí cho attackBox follow model
+        this.attackBox.position.x = this.position.x + this.attackBox.offset.x // lấy offset -50 (enemy) hoặc 0 (player) để đổi hướng attackBox
+        this.attackBox.position.y = this.position.y
+
+        // luôn update vị trí cho mỗi lần movement
+        this.position.x += this.velocity.x // sẽ thêm số lượng pixel truyền vào mỗi frame => tạo hiệu ứng rơi
         this.position.y += this.velocity.y // sẽ thêm số lượng pixel truyền vào mỗi frame => tạo hiệu ứng rơi
         
         if(this.position.y + this.height + this.velocity.y >= canvas.height){
@@ -37,16 +62,26 @@ class Sprite{
             this.velocity.y += gravity // thêm trọng lực - sẽ không còn hở khúc gần dưới màng hình khi rơi vì gravity được thêm vào cho đến khi tơi edge của canvas (576px)
         }
     }
+
+    attack() { // khi bấm attack thì isAttacking sẽ thành true nhưng sau 100ms nó sẽ trở về false
+        this.isAttacking = true
+        setTimeout(() => {
+            this.isAttacking = false
+        }, 100)
+    }
 }
 
 const player = new Sprite({
     position: { x: 0, y: 0 },
-    velocity: { x: 0, y: 0 }
+    velocity: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 },
 });
 
 const enemy = new Sprite({
     position: { x: 400, y: 100 },
-    velocity: { x: 0, y: 0 }
+    velocity: { x: 0, y: 0 },
+    color: 'blue',
+    offset: { x: -50, y: 0 },
 })
 
 enemy.draw();
@@ -64,6 +99,20 @@ const keys = { // để khắc phục việc buôn 1 phím nhưng dừng movemen
     ArrowLeft: {
         pressed: false
     }
+}
+
+function rectangularCollision({ attackRect, getHitRect }) { // detect collision between 2 rectangle
+    
+    // nếu mặt bên phải attackBox vượt qua mặt bên trái của enemy
+    // và mặt bên trái của attackBox vượt qua mặt bên phải của enemy thì true    
+    // nếu mặt dưới attackBox của player lớn hơn đỉnh đầu của enemy => player đang nhảy cao hơn enemy => hog dính attack
+    // và nếu đỉnh đầu của player thấp hơn chiều cao của enemy nhảy lên   
+    return (
+        attackRect.attackBox.position.x + attackRect.attackBox.width >= getHitRect.position.x 
+        && attackRect.attackBox.position.x <= getHitRect.position.x + getHitRect.width 
+        && attackRect.attackBox.position.y + attackRect.attackBox.height >= getHitRect.position.y  
+        && attackRect.attackBox.position.y <= getHitRect.position.y + getHitRect.height
+    )
 }
 
 function animate(){
@@ -92,6 +141,27 @@ function animate(){
     else if (keys.ArrowRight.pressed && enemy.lastKey === 'ArrowRight'){ 
         enemy.velocity.x = 5
     }
+
+    // Nhận diện va chạm giữa model cho player
+    if( rectangularCollision({ 
+        attackRect: player,
+        getHitRect: enemy
+    }) && player.isAttacking ) 
+    { 
+        player.isAttacking = false; // dòng này chỉ cho phép get hit 1 lần
+        console.log("player attack!");
+    }
+
+    // Nhận diện va chạm giữa model cho enemy
+    if( rectangularCollision({ 
+        attackRect: enemy,
+        getHitRect: player
+    }) && enemy.isAttacking ) 
+    { 
+        enemy.isAttacking = false; // dòng này chỉ cho phép get hit 1 lần
+        console.log("enemy attack!");
+    }
+
 }
 animate()
 
@@ -110,6 +180,9 @@ window.addEventListener( 'keydown', (event) => {
             // bay lên - hạ xuống được nhờ có gravity, vì gravity luôn kéo model xuống nếu như lơ lững (k gần edge rìa)
             player.velocity.y = -10 // thêm 20px vào trục y để nhảy
             break
+        case 'j': // ấn space
+            player.attack()
+            break
 
         case 'ArrowRight':
             keys.ArrowRight.pressed = true; // di chuyển 1 px mỗi khi ấn mũi tên phải
@@ -123,6 +196,9 @@ window.addEventListener( 'keydown', (event) => {
         case 'ArrowUp':
             // bay lên - hạ xuống được nhờ có gravity, vì gravity luôn kéo model xuống nếu như lơ lững (k gần edge rìa)
             enemy.velocity.y = -10 // thêm 20px vào trục y để nhảy
+            break
+        case '0': // ấn 0
+            enemy.attack()
             break
     }
 })
