@@ -31,6 +31,7 @@ class Sprite{
         }
         this.color = color // màu của model
         this.isAttacking // default là false
+        this.health = 100
     }
 
     draw(){
@@ -150,6 +151,8 @@ function animate(){
     { 
         player.isAttacking = false; // dòng này chỉ cho phép get hit 1 lần
         console.log("player attack!");
+        enemy.health = enemy.health - 20
+        document.querySelector('#enemyHealth').style.width = enemy.health + '%'// giảm máu enemy khi nhận sát thương
     }
 
     // Nhận diện va chạm giữa model cho enemy
@@ -160,6 +163,8 @@ function animate(){
     { 
         enemy.isAttacking = false; // dòng này chỉ cho phép get hit 1 lần
         console.log("enemy attack!");
+        player.health = player.health - 20
+        document.querySelector('#playerHealth').style.width = player.health + '%'// giảm máu player khi nhận sát thương
     }
 
 }
@@ -167,6 +172,7 @@ animate()
 
 window.addEventListener( 'keydown', (event) => {
     switch ( event.key){
+        // movement player
         case 'd':
             keys.d.pressed = true; // di chuyển 1 px mỗi khi ấn d
             player.lastKey = 'd'
@@ -184,6 +190,7 @@ window.addEventListener( 'keydown', (event) => {
             player.attack()
             break
 
+        // movement enemy
         case 'ArrowRight':
             keys.ArrowRight.pressed = true; // di chuyển 1 px mỗi khi ấn mũi tên phải
             enemy.lastKey = 'ArrowRight'
