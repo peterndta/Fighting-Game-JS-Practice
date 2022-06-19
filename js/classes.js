@@ -1,18 +1,52 @@
 class Sprite{ // func for rendering image bg
-    constructor({ position, imageSrc}) {
+    constructor({ position, imageSrc, scale = 1, frameMax = 1 }) {
         this.position = position
         this.height = 150
         this.width = 50
         this.image = new Image() // tạo html image trong code js property
         this.image.src = imageSrc // set image = hình muốn hiển thị
+        this.scale = scale // kích thước phóng của image 
+        this.frameMax = frameMax // số lượng frame tối đa (với BG là 1, còn shop là 6)
+        this.frameCurrent = 0 // frame hiện tại đang crop
+
+        // 2 thằng dưới để giảm thời gian trôi frame không nhanh quá cho Shop.png
+        this.frameElapsed = 0 // số lượng frame trôi qua
+        this.frameHold = 9 // số lượng frame trôi qua trước khi tăng số frameCurrent => VD: frameHold = 10 thì 10 frame trôi qua mới chuyển 1 frame Shop => frameHold càng nhỏ thì animation càng nhanh
     }
 
     draw(){
-        c.drawImage(this.image, this.position.x , this.position.y) // func drawImage để display image ra screen
+        // Để tạo hiệu ứng animation cho shop.png cần crop 1 frame đầu tiên
+        // rồi di chuyển dần qua các frame tiếp theo để tạo hiệu ứng chuyển động
+
+        // Lý do tại sao Background k di chuyển frame vì 1024 / 1 = 1024 => k chuyển động
+        c.drawImage(
+            this.image,
+            // 2 argument đầu là vị trí crop ra ô vuông sao cho tương ứng với frame đầu 
+            this.frameCurrent * (this.image.width / this.frameMax), // crop location x = 0 => start at top left-hand corner 
+            0, // crop location y
+            this.image.width / this.frameMax, // crop width: ở đây chia 6 vì shop.png có 6 frame
+            this.image.height, // crop height
+            this.position.x, // location x of image
+            this.position.y, // location y of image
+            (this.image.width / this.frameMax) * this.scale, // image width: / 6 vì nếu k nó sẽ lấy full width của image
+            this.image.height * this.scale // image height
+        ) // func drawImage để display image ra screen
     }
 
     update(){
         this.draw()
+        this.frameElapsed++ // frameElapsed sẽ tăng lên sau mỗi lần gọi update
+
+        if(this.frameElapsed % this.frameHold === 0){
+            
+            // Di chuyển frame by frame cho tới khi đạt được frameMax (là 6) thì quay về trở lại frame 0 r tiếp tục lập lại => tạo hiệu ứng movement cho shop
+            if(this.frameCurrent < this.frameMax - 1){ // - 1 vì BG có frameMax = 1 mà frameCurrent = 0 => true => frameCurrent++ => crop mark vượt ngoài bg image => màu đen => flicking black screen on/off không mong muốn
+                this.frameCurrent++
+            }else{
+                this.frameCurrent = 0
+            }
+        }
+
     }
 }
 

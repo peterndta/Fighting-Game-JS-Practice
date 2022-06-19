@@ -13,6 +13,13 @@ const background = new Sprite({ // sprite để render bg
     imageSrc: './BG/background.png'
 })
 
+const shop = new Sprite({ // sprite để render shop animation
+    position: { x: 600, y: 128 },
+    imageSrc: './BG/shop.png',
+    scale: 2.75, // phóng to shop image lên 1.5 px
+    frameMax: 6
+})
+
 const player = new Fighter({
     position: { x: 54, y: 0 },
     velocity: { x: 0, y: 0 },
@@ -51,6 +58,7 @@ function animate(){
     c.fillStyle = 'black' // cho nền đen
     c.fillRect(0, 0, canvas.width, canvas.height) // fill full size canvas màu đen mỗi frame để tạo hiệu ứng rơi thật hơn - không bị chảy dài xuống như sơn 
     background.update() // gọi bg trc để k bị đè lên model character
+    shop.update() 
     player.update()
     enemy.update()
     
