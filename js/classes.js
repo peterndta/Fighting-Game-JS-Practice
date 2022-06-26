@@ -113,6 +113,7 @@ class Fighter extends Sprite {
         
         if(this.position.y + this.height + this.velocity.y >= canvas.height - 96){ // nếu model rơi lớn hơn giới hạn thì k rơi nữa => nhận biết khi nào chạm đất => k bị rơi xuống dưới sâu thêm nữa
             this.velocity.y = 0 // ngăn không cho rơi xuống ngoài canvas
+            this.position.y = 330 // tránh việc flash effect giữa idle và fall sprite do có 1 khoảng hở nhỏ của gravity và velocity code 
         } else {
             // chỉ rơi xuống nếu không rơi ra ngoài canvas
             this.velocity.y += gravity // thêm trọng lực - sẽ không còn hở khúc gần dưới màng hình khi rơi vì gravity được thêm vào cho đến khi tơi edge của canvas (576px)
@@ -125,4 +126,47 @@ class Fighter extends Sprite {
             this.isAttacking = false
         }, 100)
     } 
+
+    // func để đổi sprites
+    switchSprite(sprite) {
+        switch (sprite) {
+            case 'idle':
+                if (this.image !== this.sprites.idle.image) {
+                    this.image = this.sprites.idle.image 
+                    this.frameMax = this.sprites.idle.frameMax
+
+                    /* 
+                    tránh tình trạng chớp hình character khi chuyển sprite - vì current frame đang loop qua sprite đó, các frame tăng dần nên khi chuyển qua sprite khác thì
+                    current frame vẫn đang bằng frame cuối trước khi bị chuyển qua sprites khác -> gây hiệu ứng chớp tắt -> phải luôn set current frame về 0 trc khi chuyển qua sprite khác
+                    */
+                    this.frameCurrent = 0 
+                    
+                }
+                break;
+
+            case 'run':
+                if (this.image !== this.sprites.run.image) {
+                    this.image = this.sprites.run.image
+                    this.frameMax = this.sprites.run.frameMax
+                    this.frameCurrent = 0 
+                }
+                break;
+
+            case 'jump':
+                if (this.image !== this.sprites.jump.image) {
+                    this.image = this.sprites.jump.image
+                    this.frameMax = this.sprites.jump.frameMax
+                    this.frameCurrent = 0 
+                }
+                break;
+
+            case 'fall':
+                if (this.image !== this.sprites.fall.image) {
+                    this.image = this.sprites.fall.image
+                    this.frameMax = this.sprites.fall.frameMax
+                    this.frameCurrent = 0 
+                }
+                break;
+        }
+    }
 }

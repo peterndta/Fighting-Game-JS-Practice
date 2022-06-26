@@ -35,8 +35,15 @@ const player = new Fighter({
         },
         run: {
             imageSrc: './P1/Run.png',
-            frameMax: 8,
-            image: new Image()
+            frameMax: 8,  
+        },
+        jump: {
+            imageSrc: './P1/Jump.png',
+            frameMax: 2,   
+        },
+        fall: {
+            imageSrc: './P1/Fall.png',
+            frameMax: 2,   
         }
     }
 })
@@ -81,14 +88,21 @@ function animate(){
     enemy.velocity.x = 0 // dừng model enemy character khi bỏ tay ra
 
     // player movement 
-    player.image = player.sprites.idle.image // default luôn là idle sprites
     if(keys.a.pressed && player.lastKey === 'a'){ // nếu pressed = true
         player.velocity.x = -5
-        player.image = player.sprites.run.image // chuyển qua run sprites khi press A
+        player.switchSprite('run') // chuyển qua run sprites khi press A
     } 
     else if (keys.d.pressed && player.lastKey === 'd'){ 
         player.velocity.x = 5
-        player.image = player.sprites.run.image // chuyển qua run sprites khi press D
+        player.switchSprite('run') // chuyển qua run sprites khi press D
+    } else {
+        player.switchSprite('idle') // sẽ là idle khi không press A hoặc D 
+    }
+
+    if (player.velocity.y < 0) { // đang nhảy
+        player.switchSprite('jump')
+    } else if (player.velocity.y > 0) { // đang rơi
+        player.switchSprite('fall')
     }
 
     // enemy movement 
