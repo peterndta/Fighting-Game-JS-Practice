@@ -24,6 +24,10 @@ const player = new Fighter({
     position: { x: 54, y: 0 },
     velocity: { x: 0, y: 0 },
     offset: { x: 0, y: 0 },
+    imageSrc: './P1/Idle.png',
+    frameMax: 8,
+    scale: 2.5,
+    offset: { x: 215, y: 157 },
 })
 
 const enemy = new Fighter({
@@ -60,7 +64,7 @@ function animate(){
     background.update() // gọi bg trc để k bị đè lên model character
     shop.update() 
     player.update()
-    enemy.update()
+    // enemy.update()
     
     player.velocity.x = 0 // dừng model player character khi bỏ tay ra
     enemy.velocity.x = 0 // dừng model enemy character khi bỏ tay ra
