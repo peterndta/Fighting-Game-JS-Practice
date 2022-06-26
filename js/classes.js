@@ -53,7 +53,7 @@ class Sprite{ // func for rendering image bg
 }
 
 class Fighter extends Sprite {
-    constructor({ position, velocity, color = 'red', imageSrc, scale = 1, frameMax = 1, offset = { x: 0, y: 0 }}) {
+    constructor({ position, velocity, color = 'red', imageSrc, scale = 1, frameMax = 1, offset = { x: 0, y: 0 }, sprites}) {
         super({ // gọi constructor của parrent (Sprite)
             position,
             imageSrc,
@@ -88,7 +88,14 @@ class Fighter extends Sprite {
         // 2 thằng dưới để giảm thời gian trôi frame không nhanh quá cho Shop.png
         this.frameElapsed = 0 // số lượng frame trôi qua
         this.frameHold = 9 // số lượng frame trôi qua trước khi tăng số frameCurrent => VD: frameHold = 10 thì 10 frame trôi qua mới chuyển 1 frame Shop => frameHold càng nhỏ thì animation càng nhanh
+        this.sprites = sprites // chuyển giữa các bộ sprites VD: từ sprites idle qua run hoặc jump
     
+        // loop qua sprite object
+        for (const sprite in this.sprites) { // sprite là key. VD run hoặc idle bên object sprites trong index.js
+            sprites[sprite].image = new Image()
+            sprites[sprite].image.src = sprites[sprite].imageSrc
+        }
+
     }
 
     update(){

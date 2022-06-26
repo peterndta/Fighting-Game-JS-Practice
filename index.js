@@ -28,6 +28,17 @@ const player = new Fighter({
     frameMax: 8,
     scale: 2.5,
     offset: { x: 215, y: 157 },
+    sprites: { // chứa các sprite movement của 1 char
+        idle: {
+            imageSrc: './P1/Idle.png',
+            frameMax: 8,
+        },
+        run: {
+            imageSrc: './P1/Run.png',
+            frameMax: 8,
+            image: new Image()
+        }
+    }
 })
 
 const enemy = new Fighter({
@@ -70,11 +81,14 @@ function animate(){
     enemy.velocity.x = 0 // dừng model enemy character khi bỏ tay ra
 
     // player movement 
+    player.image = player.sprites.idle.image // default luôn là idle sprites
     if(keys.a.pressed && player.lastKey === 'a'){ // nếu pressed = true
         player.velocity.x = -5
+        player.image = player.sprites.run.image // chuyển qua run sprites khi press A
     } 
     else if (keys.d.pressed && player.lastKey === 'd'){ 
         player.velocity.x = 5
+        player.image = player.sprites.run.image // chuyển qua run sprites khi press D
     }
 
     // enemy movement 
