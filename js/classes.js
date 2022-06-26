@@ -53,7 +53,11 @@ class Sprite{ // func for rendering image bg
 }
 
 class Fighter extends Sprite {
-    constructor({ position, velocity, color = 'red', imageSrc, scale = 1, frameMax = 1, offset = { x: 0, y: 0 }, sprites}) {
+    constructor({ 
+        position, velocity, color = 'red', imageSrc, scale = 1, frameMax = 1,
+        offset = { x: 0, y: 0 }, sprites, 
+        attackBox = { offset: {}, width: undefined, height: undefined}
+    }) {
         super({ // gọi constructor của parrent (Sprite)
             position,
             imageSrc,
@@ -68,17 +72,19 @@ class Fighter extends Sprite {
         // lastKey dùng để keep track phím cuối được nhấn cho vào dòng if below
         // để tránh việc khi press A thì k press D đc vì if vào A đầu tiên 
         this.lastKey
+
+        // Attack Box
         this.attackBox = {
             position:{  // cho attackBox luôn follow model
                 // tạo vị trí của attackBox tùy thuộc vào player hay enemy
                 x: this.position.x, 
                 y: this.position.y,
             }, 
-            offset, // truyền từ lúc khởi tạo Sprite ở dưới - có tác dụng truyền vào cho update() để đổi hướng attackBox tùy thuộc vào player hay enemy
+            offset: attackBox.offset, // truyền từ lúc khởi tạo Sprite ở dưới - có tác dụng truyền vào cho update() để đổi hướng attackBox tùy thuộc vào player hay enemy
 
             // Chiều dài và rộng của attackBox
-            width: 100,
-            height: 50,
+            width: attackBox.width,
+            height: attackBox.height,
         }
         this.color = color // màu của model
         this.isAttacking // default là false
@@ -87,7 +93,7 @@ class Fighter extends Sprite {
         this.frameCurrent = 0 // frame hiện tại đang crop
         // 2 thằng dưới để giảm thời gian trôi frame không nhanh quá cho Shop.png
         this.frameElapsed = 0 // số lượng frame trôi qua
-        this.frameHold = 9 // số lượng frame trôi qua trước khi tăng số frameCurrent => VD: frameHold = 10 thì 10 frame trôi qua mới chuyển 1 frame Shop => frameHold càng nhỏ thì animation càng nhanh
+        this.frameHold = 6 // số lượng frame trôi qua trước khi tăng số frameCurrent => VD: frameHold = 10 thì 10 frame trôi qua mới chuyển 1 frame Shop => frameHold càng nhỏ thì animation càng nhanh
         this.sprites = sprites // chuyển giữa các bộ sprites VD: từ sprites idle qua run hoặc jump
     
         // loop qua sprite object
@@ -105,7 +111,10 @@ class Fighter extends Sprite {
 
         //luôn update vị trí cho attackBox follow model
         this.attackBox.position.x = this.position.x + this.attackBox.offset.x // lấy offset -50 (enemy) hoặc 0 (player) để đổi hướng attackBox
-        this.attackBox.position.y = this.position.y
+        this.attackBox.position.y = this.position.y + this.attackBox.offset.y
+
+        // AttackBox display on screen
+        // c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.width, this.attackBox.height)
 
         // luôn update vị trí cho mỗi lần movement
         this.position.x += this.velocity.x // sẽ thêm số lượng pixel truyền vào mỗi frame => tạo hiệu ứng rơi
@@ -123,9 +132,6 @@ class Fighter extends Sprite {
     attack() { // khi bấm attack thì isAttacking sẽ thành true nhưng sau 100ms nó sẽ trở về false
         this.switchSprite('attack1')
         this.isAttacking = true
-        setTimeout(() => {
-            this.isAttacking = false
-        }, 100)
     } 
 
     // func để đổi sprites

@@ -49,6 +49,13 @@ const player = new Fighter({
             imageSrc: './P1/Attack1.png',
             frameMax: 6,   
         }
+    },
+    attackBox: {
+        offset: {
+            x: 140, y: 50
+        },
+        width: 140,
+        height: 50
     }
 })
 
@@ -57,6 +64,39 @@ const enemy = new Fighter({
     velocity: { x: 0, y: 0 },
     color: 'blue',
     offset: { x: -50, y: 0 },
+    imageSrc: './P2/Idle.png',
+    frameMax: 4,
+    scale: 2.5,
+    offset: { x: 215, y: 167 },
+    sprites: { // chứa các sprite movement của 1 char
+        idle: {
+            imageSrc: './P2/Idle.png',
+            frameMax: 4,
+        },
+        run: {
+            imageSrc: './P2/Run.png',
+            frameMax: 8,  
+        },
+        jump: {
+            imageSrc: './P2/Jump.png',
+            frameMax: 2,   
+        },
+        fall: {
+            imageSrc: './P2/Fall.png',
+            frameMax: 2,   
+        },
+        attack1: {
+            imageSrc: './P2/Attack1.png',
+            frameMax: 4,   
+        }
+    },
+    attackBox: {
+        offset: {
+            x: -185, y: 50
+        },
+        width: 185,
+        height: 50
+    }
 })
 
 enemy.draw();
@@ -86,7 +126,7 @@ function animate(){
     background.update() // gọi bg trc để k bị đè lên model character
     shop.update() 
     player.update()
-    // enemy.update()
+    enemy.update()
     
     player.velocity.x = 0 // dừng model player character khi bỏ tay ra
     enemy.velocity.x = 0 // dừng model enemy character khi bỏ tay ra
@@ -103,6 +143,7 @@ function animate(){
         player.switchSprite('idle') // sẽ là idle khi không press A hoặc D 
     }
 
+    // player jump
     if (player.velocity.y < 0) { // đang nhảy
         player.switchSprite('jump')
     } else if (player.velocity.y > 0) { // đang rơi
@@ -112,35 +153,55 @@ function animate(){
     // enemy movement 
     if(keys.ArrowLeft.pressed && enemy.lastKey === 'ArrowLeft'){ // nếu pressed = true
         enemy.velocity.x = -5
+        enemy.switchSprite('run')
     } 
     else if (keys.ArrowRight.pressed && enemy.lastKey === 'ArrowRight'){ 
         enemy.velocity.x = 5
+        enemy.switchSprite('run')
+    } else {
+        enemy.switchSprite('idle') 
+    }
+
+    // enemy jump
+    if (enemy.velocity.y < 0) { // đang nhảy
+        enemy.switchSprite('jump')
+    } else if (enemy.velocity.y > 0) { // đang rơi
+        enemy.switchSprite('fall')
     }
 
     // Nhận diện va chạm giữa model cho player
     if( rectangularCollision({ 
         attackRect: player,
         getHitRect: enemy
-    }) && player.isAttacking ) 
+    }) && player.isAttacking && player.frameCurrent === 4 ) // chỉ trừ máu khi tới frame 4
     { 
         player.isAttacking = false; // dòng này chỉ cho phép get hit 1 lần
         console.log("player attack!");
-        enemy.health = enemy.health - 20
+        enemy.health = enemy.health - 15
         document.querySelector('#enemyHealth').style.width = enemy.health + '%'// giảm máu enemy khi nhận sát thương
+    }
+    // if player miss hit
+    if (player.isAttacking && player.frameCurrent === 4){
+        player.isAttacking = false;
     }
 
     // Nhận diện va chạm giữa model cho enemy
     if( rectangularCollision({ 
         attackRect: enemy,
         getHitRect: player
-    }) && enemy.isAttacking ) 
+    }) && enemy.isAttacking && enemy.frameCurrent === 2 ) 
     { 
         enemy.isAttacking = false; // dòng này chỉ cho phép get hit 1 lần
         console.log("enemy attack!");
-        player.health = player.health - 20
+        player.health = player.health - 10
         document.querySelector('#playerHealth').style.width = player.health + '%'// giảm máu player khi nhận sát thương
     }
 
+    // if enemy miss hit
+    if (enemy.isAttacking && enemy.frameCurrent === 2){
+        enemy.isAttacking = false;
+    }
+    
     // end game by out of health
     if(enemy.health <= 0 || player.health <= 0){
         determineWinner({player, enemy, timerId})
