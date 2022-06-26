@@ -121,6 +121,7 @@ class Fighter extends Sprite {
     }
 
     attack() { // khi bấm attack thì isAttacking sẽ thành true nhưng sau 100ms nó sẽ trở về false
+        this.switchSprite('attack1')
         this.isAttacking = true
         setTimeout(() => {
             this.isAttacking = false
@@ -129,6 +130,9 @@ class Fighter extends Sprite {
 
     // func để đổi sprites
     switchSprite(sprite) {
+        if(this.image === this.sprites.attack1.image && this.frameCurrent < this.sprites.attack1.frameMax - 1) {
+            return
+        }
         switch (sprite) {
             case 'idle':
                 if (this.image !== this.sprites.idle.image) {
@@ -164,6 +168,14 @@ class Fighter extends Sprite {
                 if (this.image !== this.sprites.fall.image) {
                     this.image = this.sprites.fall.image
                     this.frameMax = this.sprites.fall.frameMax
+                    this.frameCurrent = 0 
+                }
+                break;
+
+            case 'attack1':
+                if (this.image !== this.sprites.attack1.image) {
+                    this.image = this.sprites.attack1.image
+                    this.frameMax = this.sprites.attack1.frameMax
                     this.frameCurrent = 0 
                 }
                 break;
